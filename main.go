@@ -12,7 +12,6 @@ import (
 
 func main() {
 	kubeconfig := flag.String("kubeconfig", "/Users/abdurrehman/.kube/config", "location for my kubeconfig file")
-	fmt.Println("Kubeconfig: ", kubeconfig)
 	// create config object to create Kubernetes clients down the line
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
@@ -30,5 +29,14 @@ func main() {
 	fmt.Println("Pods: ")
 	for _, pod := range pods.Items {
 		fmt.Printf("%s", pod.Name)
+	}
+	node, err := clientset.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		fmt.Println("nodes could not get fetched")
+	}
+	fmt.Println()
+	fmt.Println("Nodes: ")
+	for _, nodes := range node.Items {
+		fmt.Printf("%s", nodes.Name)
 	}
 }
