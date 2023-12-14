@@ -2,27 +2,28 @@ package handlers
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 	client "aggregation-service-cluster-api/cmd/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-func handleListPods(w http.ResponseWriter, r *http.Request) {
+func handleListPods(w http.ResponseWriter, r *http.Request) (map[string]interface{}, error) {
     pods, err := client.Client().CoreV1().Pods("default").List(context.Background(), metav1.ListOptions{})
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
+        return nil, err
     }
 
-    // Encode pods into JSON
-    data, err := json.Marshal(pods.Items)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
+    // Convert pod list to a JSON map
+    var podList []map[string]interface{}
+    for _, pod := range pods.Items {
+        podMap := map[string]interface{}{
+            "name":       pod.Name,
+            "namespace":  pod.Namespace,
+            "status":     pod.Status.Phase,
+        }
+        podList = append(podList, podMap)
     }
 
-    // Write JSON data to response
-    w.Header().Set("Content-Type", "application/json")
-    w.WriteHeader(http.StatusOK)
-    w.Write(data)
+    return map[string]interface{}{
+        "pods": podList,
+    }, nil
 }
