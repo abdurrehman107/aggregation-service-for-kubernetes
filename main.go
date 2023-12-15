@@ -1,4 +1,9 @@
-// package main
+package main
+
+import (
+	"github.com/gin-gonic/gin"
+	handlers "aggregation-service-cluster-api/cmd/api/handlers"
+)
 
 // import (
 // 	"context"
@@ -52,3 +57,10 @@
 // 	// run the function existing in api.go
 // 	run()
 // }
+func main() {
+    router := gin.Default()
+	// set nodes to handleListNodes function in cmd/api/handlers/list_nodes.go
+    router.GET("/albums", handlers.HandleListNodes)
+
+    router.Run("localhost:8081")
+}

@@ -6,7 +6,7 @@ import (
 	client "aggregation-service-cluster-api/cmd/client"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-func handleListPods(w http.ResponseWriter, r *http.Request) (map[string]interface{}, error) {
+func HandleListPods(w http.ResponseWriter, r *http.Request) (map[string]interface{}, error) {
     pods, err := client.Client().CoreV1().Pods("default").List(context.Background(), metav1.ListOptions{})
     if err != nil {
         return nil, err
