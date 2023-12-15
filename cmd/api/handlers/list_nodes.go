@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// handleListNodes responds to GET /nodes requests. 
 func handleListNodes(w http.ResponseWriter, r *http.Request) (map[string]interface{}, error) {
 	nodes, err := client.Client().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
 	if err != nil {
@@ -14,7 +15,7 @@ func handleListNodes(w http.ResponseWriter, r *http.Request) (map[string]interfa
 		return nil, err
 	}
 
-	// Convert pod list to a JSON map
+	// Convert node list to a JSON map
 	var nodeList []map[string]interface{}
 	for _, node := range nodes.Items {
 		nodeMap := map[string]interface{}{
@@ -26,6 +27,6 @@ func handleListNodes(w http.ResponseWriter, r *http.Request) (map[string]interfa
 	}
 
 	return map[string]interface{}{
-		"pods": nodeList,
+		"nodes": nodeList,
 	}, nil
 }
