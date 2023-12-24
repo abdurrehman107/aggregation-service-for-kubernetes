@@ -1,15 +1,18 @@
 package handlers
 
 import (
+	client "aggregation-service-cluster-api/cmd/client"
 	"context"
 	"net/http"
-	client "aggregation-service-cluster-api/cmd/client"
+
+	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
-func HandleListPods(w http.ResponseWriter, r *http.Request) (map[string]interface{}, error) {
+func HandleListPods(c *gin.Context) {
     pods, err := client.Client().CoreV1().Pods("default").List(context.Background(), metav1.ListOptions{})
     if err != nil {
-        return nil, err
+        c.Error(err)
+        return
     }
 
     // Convert pod list to a JSON map
@@ -23,7 +26,7 @@ func HandleListPods(w http.ResponseWriter, r *http.Request) (map[string]interfac
         podList = append(podList, podMap)
     }
 
-    return map[string]interface{}{
-        "pods": podList,
-    }, nil
+    c.JSON(http.StatusOK, map[string]interface{}{
+        "nodes": podList,
+    })
 }

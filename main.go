@@ -60,7 +60,15 @@ import (
 func main() {
     router := gin.Default()
 	// set nodes to handleListNodes function in cmd/api/handlers/list_nodes.go
-    router.GET("/albums", handlers.HandleListNodes)
-
+	nodes := handlers.HandleListNodes
+	pods := handlers.HandleListPods
+	router.GET("/", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{
+			"message": "Hey there! Go on to /nodes or /pods to get the list of nodes and pods respectively.",
+		})
+	
+	})
+    router.GET("/nodes", nodes)
+	router.GET("/pods", pods)
     router.Run("localhost:8081")
 }
