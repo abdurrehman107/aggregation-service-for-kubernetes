@@ -1,8 +1,10 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
+	client "aggregation-service-cluster-api/cmd/client"
+
+	"github.com/gin-gonic/gin"
 )
 
 // import (
@@ -59,16 +61,31 @@ import (
 // }
 func main() {
     router := gin.Default()
+	// create a client 
+	client := client.Client()
 	// set nodes to handleListNodes function in cmd/api/handlers/list_nodes.go
-	nodes := handlers.HandleListNodes
-	pods := handlers.HandleListPods
+	nodes, err := handlers.HandleListNodes(client)
+	if err != nil {	
+		panic(err)
+	}
+	pods, err := handlers.HandleListPods(client)
+	if err != nil {	
+		panic(err)
+	}
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"message": "Hey there! Go on to /nodes or /pods to get the list of nodes and pods respectively.",
 		})
-	
 	})
-    router.GET("/nodes", nodes)
-	router.GET("/pods", pods)
+    router.GET("/nodes", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"nodes": nodes,
+		})
+	})
+	router.GET("/pods", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"nodes": pods,
+		})
+	})
     router.Run("localhost:8081")
 }

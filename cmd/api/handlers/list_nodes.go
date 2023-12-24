@@ -1,20 +1,17 @@
 package handlers
 
 import (
-	client "aggregation-service-cluster-api/cmd/client"
+	// client "aggregation-service-cluster-api/cmd/client"
 	"context"
-	"net/http"
-
-	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 // handleListNodes responds to GET /nodes requests.
-func HandleListNodes(c *gin.Context) {
-    nodes, err := client.Client().CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+func HandleListNodes(client *kubernetes.Clientset)  (interface{}, error) {
+    nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
     if err != nil {
-        c.Error(err)
-        return
+        return nil, err
     }
 
     // Convert node list to a JSON map
@@ -27,9 +24,11 @@ func HandleListNodes(c *gin.Context) {
         }
         nodeList = append(nodeList, nodeMap)
     }
-
-    c.JSON(http.StatusOK, map[string]interface{}{
-        "nodes": nodeList,
-    })
+    return nodeList, nil
+    // // record everything in nodeList in a JSON map
+    // response := map[string]interface{}{
+    //     "nodes": nodeList,
+    // }
+    // return response, nil
 }
 
