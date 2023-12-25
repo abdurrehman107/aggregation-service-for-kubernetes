@@ -8,27 +8,26 @@ import (
 )
 
 // handleListNodes responds to GET /nodes requests.
-func HandleListNodes(client *kubernetes.Clientset)  (interface{}, error) {
-    nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
-    if err != nil {
-        return nil, err
-    }
+func HandleListNodes(client *kubernetes.Clientset) (interface{}, error) {
+	nodes, err := client.CoreV1().Nodes().List(context.Background(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
 
-    // Convert node list to a JSON map
-    var nodeList []map[string]interface{}
-    for _, node := range nodes.Items {
-        nodeMap := map[string]interface{}{
-            "name":      node.Name,
-            "namespace": node.Namespace,
-            "status":    node.Status.Phase,
-        }
-        nodeList = append(nodeList, nodeMap)
-    }
-    return nodeList, nil
-    // // record everything in nodeList in a JSON map
-    // response := map[string]interface{}{
-    //     "nodes": nodeList,
-    // }
-    // return response, nil
+	// Convert node list to a JSON map
+	var nodeList []map[string]interface{}
+	for _, node := range nodes.Items {
+		nodeMap := map[string]interface{}{
+			"name":      node.Name,
+			"namespace": node.Namespace,
+			"status":    node.Status.Phase,
+		}
+		nodeList = append(nodeList, nodeMap)
+	}
+	return nodeList, nil
+	// // record everything in nodeList in a JSON map
+	// response := map[string]interface{}{
+	//     "nodes": nodeList,
+	// }
+	// return response, nil
 }
-

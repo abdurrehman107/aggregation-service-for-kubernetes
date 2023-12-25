@@ -10,7 +10,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// clientset 
+// clientset
 func Client() *kubernetes.Clientset {
 	kubeconfig := flag.String("kubeconfig", "/Users/abdurrehman/.kube/config", "location for my kubeconfig file")
 	// create config object to create Kubernetes clients down the line
