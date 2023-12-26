@@ -7,24 +7,38 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// clientset
-func Client() *kubernetes.Clientset {
+// default method for generating config
+func GenerateDefaultConfig() *rest.Config {
 	kubeconfig := flag.String("kubeconfig", "/Users/abdurrehman/.kube/config", "location for my kubeconfig file")
-	// create config object to create Kubernetes clients down the line
+	// create config object 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
 	if err != nil {
 		fmt.Println("Config error")
 	}
-	// create a Kubernetes client
+	return config
+}
+
+// generate config using context name
+func BuildConfigWithContextFromFlags(context string, kubeconfigPath string) (*rest.Config, error) {
+	return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfigPath},
+		&clientcmd.ConfigOverrides{
+			CurrentContext: context,
+		}).ClientConfig()
+}
+// generate client using provided config
+func Client(config *rest.Config) *kubernetes.Clientset {
 	clientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		fmt.Println("clientset error")
 	}
 	return clientset
 }
+
 
 func Generate_client() {
 	kubeconfig := flag.String("kubeconfig", "/Users/abdurrehman/.kube/config", "location for my kubeconfig file")

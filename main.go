@@ -11,17 +11,20 @@ import (
 
 func main() {
 	router := gin.Default()
+	// create config object
+	config := client.GenerateDefaultConfig()
 	// create a client
-	client := client.Client()
+	genereated_client := client.Client(config)
 	// set nodes to handleListNodes function in cmd/api/handlers/list_nodes.go
-	nodes, err := handlers.HandleListNodes(client)
+	nodes, err := handlers.HandleListNodes(genereated_client)
 	if err != nil {
 		panic(err)
 	}
-	pods, err := handlers.HandleListPods(client)
+	pods, err := handlers.HandleListPods(genereated_client)
 	if err != nil {
 		panic(err)
 	}
+
 	// podWatcher, err := client.CoreV1().Pods("").Watch(context.TODO(), metav1.ListOptions{})
 	// go func() {
 	// 	for {
@@ -34,23 +37,46 @@ func main() {
 	// 		}
 	// 	}
 	// }()
-	// if err != nil {	
+	// if err != nil {
 	// 	panic(err)
 	// }
+
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
 			"message": "Hey there! Go on to /nodes or /pods to get the list of nodes and pods respectively.",
 		})
 	})
+
 	router.GET("/nodes", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"nodes": nodes,
 		})
 	})
+
 	router.GET("/pods", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"pods": pods,
 		})
 	})
+
+	// fetch resources(pods, nodes) according to context name
+	router.GET("/context/:context", func(c *gin.Context) {
+		context := c.Param("context")
+		// config := client.buildConfigWithContextFromFlags(context, "/Users/abdurrehman/.kube/config")
+		config, err := client.BuildConfigWithContextFromFlags(context, "/Users/abdurrehman/.kube/config")
+		if err != nil {
+			panic(err)
+		}
+		genereated_client := client.Client(config)
+		nodes, err := handlers.HandleListNodes(genereated_client)
+		if err != nil {
+			panic(err)
+		}
+		c.JSON(200, gin.H{
+			"nodes": nodes,
+			"pods":  pods,
+		})
+	})
+
 	router.Run("localhost:8081")
 }
