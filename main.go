@@ -3,10 +3,7 @@ package main
 import (
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
 	client "aggregation-service-cluster-api/cmd/client"
-	// "context"
-
 	"github.com/gin-gonic/gin"
-	// metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func main() {
@@ -62,13 +59,16 @@ func main() {
 	// fetch resources(pods, nodes) according to context name
 	router.GET("/context/:context", func(c *gin.Context) {
 		context := c.Param("context")
-		// config := client.buildConfigWithContextFromFlags(context, "/Users/abdurrehman/.kube/config")
 		config, err := client.BuildConfigWithContextFromFlags(context, "/Users/abdurrehman/.kube/config")
 		if err != nil {
 			panic(err)
 		}
 		genereated_client := client.Client(config)
 		nodes, err := handlers.HandleListNodes(genereated_client)
+		if err != nil {
+			panic(err)
+		}
+		pods, err := handlers.HandleListPods(genereated_client)
 		if err != nil {
 			panic(err)
 		}
