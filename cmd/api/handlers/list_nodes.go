@@ -25,9 +25,4 @@ func HandleListNodes(client *kubernetes.Clientset) (interface{}, error) {
 		nodeList = append(nodeList, nodeMap)
 	}
 	return nodeList, nil
-	// // record everything in nodeList in a JSON map
-	// response := map[string]interface{}{
-	//     "nodes": nodeList,
-	// }
-	// return response, nil
 }

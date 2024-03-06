@@ -23,8 +23,4 @@ func HandleListPods(client *kubernetes.Clientset) (interface{}, error) {
 		podList = append(podList, podMap)
 	}
 	return podList, nil
-	// response := map[string]interface{}{
-	//     "nodes": podList,
-	// }
-	// return response, nil
 }

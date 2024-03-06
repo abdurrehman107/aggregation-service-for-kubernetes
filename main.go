@@ -21,6 +21,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	deployments, err := handlers.HandleListDeployments(genereated_client)
+	if err != nil {
+		panic(err)
+	}
 
 	// podWatcher, err := client.CoreV1().Pods("").Watch(context.TODO(), metav1.ListOptions{})
 	// go func() {
@@ -53,6 +57,12 @@ func main() {
 	router.GET("/pods", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"pods": pods,
+		})
+	})
+
+	router.GET("/deployments", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"deployments": deployments,
 		})
 	})
 
