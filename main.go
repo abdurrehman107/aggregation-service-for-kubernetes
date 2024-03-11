@@ -3,6 +3,7 @@ package main
 import (
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
 	client "aggregation-service-cluster-api/cmd/client"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,7 +22,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	deployments, err := handlers.HandleListDeployments(genereated_client)
+	// deploymentClient, err := handlers.DeploymentClient(genereated_client)
+	if err != nil {
+		panic(err)
+	}
+	deploymentList, err := handlers.HandleListDeployments(genereated_client)
 	if err != nil {
 		panic(err)
 	}
@@ -62,7 +67,37 @@ func main() {
 
 	router.GET("/deployments", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"deployments": deployments,
+			"deployments": deploymentList,
+			"message":     "Do you wish to scale?.",
+		})
+	})
+
+	router.POST("/deploymentscale", func(c *gin.Context) {
+
+		// get from json request body
+		type Data struct {
+			DeploymentName string `json:"deploymentName"`
+			Replicas       string `json:"replicas"`
+		}
+
+		var data Data
+
+		if err := c.BindJSON(&data); err != nil {
+			// DO SOMETHING WITH THE ERROR
+			c.JSON(400, gin.H{
+				"message": "Invalid request body",
+			})
+			return
+		}
+
+		deploymentName := data.DeploymentName
+		replicas := data.Replicas
+
+			// scale deployment
+		// handlers.PatchDeploymentObject(ctx, genereated_client, deploymentName, replicas)	
+
+		c.JSON(200, gin.H{
+			"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
 		})
 	})
 
