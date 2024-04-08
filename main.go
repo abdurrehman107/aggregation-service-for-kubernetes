@@ -72,8 +72,15 @@ func main() {
 		})
 	})
 
-	router.POST("/deploymentscale", func(c *gin.Context) {
+	// create deployment
+	router.GET("/createdeployment", func(c *gin.Context) {
+		handlers.CreateDeploy(genereated_client)
+		c.JSON(200, gin.H{
+			"message": "Deployment created successfully.",
+		})
+	})
 
+	router.POST("/deploymentscale", func(c *gin.Context) {
 		// get from json request body
 		type Data struct {
 			DeploymentName string `json:"deploymentName"`
@@ -93,8 +100,8 @@ func main() {
 		deploymentName := data.DeploymentName
 		replicas := data.Replicas
 
-			// scale deployment
-		// handlers.PatchDeploymentObject(ctx, genereated_client, deploymentName, replicas)	
+		// scale deployment
+		// handlers.PatchDeploymentObject(ctx, genereated_client, deploymentName, replicas)
 
 		c.JSON(200, gin.H{
 			"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
