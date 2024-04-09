@@ -3,8 +3,8 @@ package main
 import (
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
 	client "aggregation-service-cluster-api/cmd/client"
-
 	"github.com/gin-gonic/gin"
+	"strconv"
 )
 
 func main() {
@@ -73,22 +73,26 @@ func main() {
 	})
 
 	// create deployment
-	router.GET("/createdeployment", func(c *gin.Context) {
-		handlers.CreateDeploy(genereated_client)
+	router.GET("/createdeployment/:replicas", func(c *gin.Context) {
+		replicas := c.Param("replicas")
+		replicas_int, err := strconv.Atoi(replicas)
+		if err != nil {
+			panic("Error with data type of mentioned replicas ")
+		}
+		handlers.CreateDeploy(genereated_client, replicas_int)
 		c.JSON(200, gin.H{
 			"message": "Deployment created successfully.",
 		})
 	})
 
+	// scale deployment (not working)
 	router.POST("/deploymentscale", func(c *gin.Context) {
 		// get from json request body
 		type Data struct {
 			DeploymentName string `json:"deploymentName"`
 			Replicas       string `json:"replicas"`
 		}
-
 		var data Data
-
 		if err := c.BindJSON(&data); err != nil {
 			// DO SOMETHING WITH THE ERROR
 			c.JSON(400, gin.H{
@@ -96,19 +100,17 @@ func main() {
 			})
 			return
 		}
-
 		deploymentName := data.DeploymentName
 		replicas := data.Replicas
-
 		// scale deployment
 		// handlers.PatchDeploymentObject(ctx, genereated_client, deploymentName, replicas)
-
 		c.JSON(200, gin.H{
 			"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
 		})
 	})
 
 	// fetch resources(pods, nodes) according to context name
+	// e.g. localhost:8081/context/kind-cluster-1
 	router.GET("/context/:context", func(c *gin.Context) {
 		context := c.Param("context")
 		config, err := client.BuildConfigWithContextFromFlags(context, "/Users/abdurrehman/.kube/config")

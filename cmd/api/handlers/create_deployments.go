@@ -8,13 +8,13 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
-func CreateDeploy(client *kubernetes.Clientset) {
+func CreateDeploy(client *kubernetes.Clientset, replicas int) {
 	deploymentSpec := &appsV1.Deployment{
 		ObjectMeta: metaV1.ObjectMeta{
 			Name: "demo-deployment",
 		},
 		Spec: appsV1.DeploymentSpec{
-			Replicas: func() *int32 { i := int32(2); return &i }(),
+			Replicas: func() *int32 { i := int32(replicas); return &i }(),
 			Selector: &metaV1.LabelSelector{
 				MatchLabels: map[string]string{
 					"app": "demo",
