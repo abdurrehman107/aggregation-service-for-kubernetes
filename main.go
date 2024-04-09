@@ -72,14 +72,22 @@ func main() {
 		})
 	})
 
-	// create deployment
-	router.GET("/createdeployment/:replicas", func(c *gin.Context) {
+	// Create deployment and set required number of replicas 
+	// e.g. localhost:8081/createDeployment/newdeploy/3 
+	router.GET("/createdeployment/:deployment_name/:replicas", func(c *gin.Context) {
+		deployment_name := c.Param("deployment_name")
+		if deployment_name == "" {
+			c.JSON(400, gin.H{
+				"message": "Deployment name is required.",
+			})
+			return
+		}
 		replicas := c.Param("replicas")
 		replicas_int, err := strconv.Atoi(replicas)
 		if err != nil {
 			panic("Error with data type of mentioned replicas ")
 		}
-		handlers.CreateDeploy(genereated_client, replicas_int)
+		handlers.CreateDeploy(genereated_client, deployment_name, replicas_int)
 		c.JSON(200, gin.H{
 			"message": "Deployment created successfully.",
 		})
