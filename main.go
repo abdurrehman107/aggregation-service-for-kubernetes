@@ -6,7 +6,6 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"k8s.io/apimachinery/pkg/api/resource"
 )
 
 func main() {
@@ -107,6 +106,9 @@ func main() {
 			})
 			return
 		}
+		resource = "deployment"
+		name = "demo-deployment"
+		handlers.FetchYAML(genereated_client, "default", resource, name)
 	})
 
 	// scale deployment (not working)
