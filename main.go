@@ -108,7 +108,13 @@ func main() {
 		}
 		resource = "deployment"
 		name = "demo-deployment"
-		handlers.FetchYAML(genereated_client, "default", resource, name)
+		yaml, err := handlers.FetchYAML(genereated_client, "default", resource, name)
+		if err != nil {
+			panic(err)
+		}
+		c.JSON(200, gin.H{
+			"yaml": yaml,
+		})
 	})
 
 	// scale deployment (not working)
