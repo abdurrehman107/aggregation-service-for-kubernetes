@@ -18,7 +18,7 @@ func FetchYAML(client *kubernetes.Clientset, namespace string, resourceType stri
 	// 	// Retrieve the latest version of Deployment before attempting update
 	// 	// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
 	deploymentsClient := client.AppsV1()
-	object, err := deploymentsClient.Deployments("default").Get(context.TODO(), "demo-deployment", metaV1.GetOptions{})
+	object, err := deploymentsClient.Deployments("default").Get(context.TODO(), resourceName, metaV1.GetOptions{})
 	if err != nil {
 		panic(fmt.Errorf("failed to get Deployment: %v", err))
 	}
@@ -31,6 +31,7 @@ func FetchYAML(client *kubernetes.Clientset, namespace string, resourceType stri
 	if err := jsonSerializer.Encode(object, &yamlBuffer); err != nil {
 		panic(err.Error())
 	}
+	return yamlBuffer.String(), nil
 
 	// var objMap map[string]interface{}
     // if err := json.Unmarshal(yamlBuffer.Bytes(), &objMap); err != nil {
@@ -39,7 +40,6 @@ func FetchYAML(client *kubernetes.Clientset, namespace string, resourceType stri
 
 	// fmt.Println(yamlBuffer.String())
 	// yaml = yamlBuffer.String()
-	return yamlBuffer.String(), nil
 		// result.Spec.Replicas = int32Ptr(1)                           // reduce replica count
 		// result.Spec.Template.Spec.Containers[0].Image = "nginx:1.13" // change nginx version
 		//_, updateErr := deploymentsClient.Update(context.TODO(), result, metav1.UpdateOptions{})

@@ -106,8 +106,8 @@ func main() {
 			})
 			return
 		}
-		resource = "deployment"
-		name = "demo-deployment"
+		// resource = "deployment"
+		// name = "demo-deployment"
 		yaml, err := handlers.FetchYAML(genereated_client, "default", resource, name)
 		if err != nil {
 			panic(err)
