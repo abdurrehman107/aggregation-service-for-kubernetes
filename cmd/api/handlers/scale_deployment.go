@@ -9,13 +9,15 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	appsv1 "k8s.io/api/apps/v1"
 	v1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/strategicpatch"
 	"k8s.io/client-go/kubernetes"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/util/retry"
 )
 
 func PatchDeploymentObject(ctx context.Context, client kubernetes.Interface, cur, mod *v1.Deployment) (*v1.Deployment, error) {
@@ -41,3 +43,23 @@ func PatchDeploymentObject(ctx context.Context, client kubernetes.Interface, cur
 	out, err := client.AppsV1().Deployments(cur.Namespace).Patch(ctx, cur.Name, types.StrategicMergePatchType, patch, metav1.PatchOptions{})
 	return out, err
 }
+
+func UpdateDeployment(client *kubernetes.Clientset, deploymentName string, replicas int, image string) {
+	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		// Retrieve the latest version of Deployment before attempting update
+		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
+		result, getErr := client.AppsV1().Deployments("default").Get(context.TODO(), deploymentName, metav1.GetOptions{})
+		if getErr != nil {
+			panic(fmt.Errorf("failed to get latest version of Deployment: %v", getErr))
+		}
+
+		result.Spec.Replicas = int32Ptr(int32(replicas))             // reduce replica count
+		result.Spec.Template.Spec.Containers[0].Image = image // change nginx version
+		_, updateErr := client.AppsV1().Deployments("default").Update(context.TODO(), result, metav1.UpdateOptions{})
+		return updateErr
+	})
+	if retryErr != nil {
+		panic(fmt.Errorf("update failed: %v", retryErr))
+	}
+}
+func int32Ptr(i int32) *int32 { return &i }

@@ -82,7 +82,6 @@ func main() {
 			c.JSON(400, gin.H{
 				"message": "Deployment name is required.",
 			})
-			return
 		}
 		replicas := c.Param("replicas")
 		replicas_int, err := strconv.Atoi(replicas)
@@ -106,8 +105,6 @@ func main() {
 			})
 			return
 		}
-		// resource = "deployment"
-		// name = "demo-deployment"
 		yaml, err := handlers.FetchYAML(genereated_client, "default", resource, name)
 		if err != nil {
 			panic(err)
@@ -117,29 +114,43 @@ func main() {
 		})
 	})
 
-	// scale deployment (not working)
-	router.POST("/deploymentscale", func(c *gin.Context) {
-		// get from json request body
-		type Data struct {
-			DeploymentName string `json:"deploymentName"`
-			Replicas       string `json:"replicas"`
+
+	// Scale deployment
+	// e.g. localhost:8081/deploymentscale
+	router.GET("/deploymentscale/:deploymentName/:replicas/:newImage", func(c *gin.Context) {
+		deploymentName := c.Param("deploymentName")
+		replicas := c.Param("replicas")
+		replicas_int, err := strconv.Atoi(replicas)
+		if err != nil {
+			panic("err")
 		}
-		var data Data
-		if err := c.BindJSON(&data); err != nil {
-			// DO SOMETHING WITH THE ERROR
-			c.JSON(400, gin.H{
-				"message": "Invalid request body",
-			})
-			return
-		}
-		deploymentName := data.DeploymentName
-		replicas := data.Replicas
-		// scale deployment
-		// handlers.PatchDeploymentObject(ctx, genereated_client, deploymentName, replicas)
-		c.JSON(200, gin.H{
-			"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
-		})
+		newImage := c.Param("newImage")
+		handlers.UpdateDeployment(genereated_client, deploymentName, replicas_int, newImage)
 	})
+
+	// scale deployment (not working)
+	// router.POST("/deploymentscale", func(c *gin.Context) {
+	// 	// get from json request body
+	// 	type Data struct {
+	// 		DeploymentName string `json:"deploymentName"`
+	// 		Replicas       string `json:"replicas"`
+	// 	}
+	// 	var data Data
+	// 	if err := c.BindJSON(&data); err != nil {
+	// 		// DO SOMETHING WITH THE ERROR
+	// 		c.JSON(400, gin.H{
+	// 			"message": "Invalid request body",
+	// 		})
+	// 		return
+	// 	}
+	// 	deploymentName := data.DeploymentName
+	// 	replicas := data.Replicas
+	// 	// scale deployment
+	// 	// handlers.PatchDeploymentObject(ctx, genereated_client, deploymentName, replicas)
+	// 	c.JSON(200, gin.H{
+	// 		"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
+	// 	})
+	// })
 
 	// fetch resources(pods, nodes) according to context name
 	// e.g. localhost:8081/context/kind-cluster-1
