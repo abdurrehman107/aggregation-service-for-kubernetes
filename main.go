@@ -115,8 +115,8 @@ func main() {
 	})
 
 
-	// Scale deployment
-	// e.g. localhost:8081/deploymentscale
+	// Scale deployment (change replicas) and change image of deployment
+	// e.g. localhost:8081/deploymentscale/deployment-name/replicas/image
 	router.GET("/deploymentscale/:deploymentName/:replicas/:newImage", func(c *gin.Context) {
 		deploymentName := c.Param("deploymentName")
 		replicas := c.Param("replicas")
