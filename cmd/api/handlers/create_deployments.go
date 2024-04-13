@@ -8,6 +8,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// CreateDeploy creates a deployment with the given name and number of replicas.
 func CreateDeploy(client *kubernetes.Clientset, deployment_name string, replicas int) {
 	deploymentSpec := &appsV1.Deployment{
 		ObjectMeta: metaV1.ObjectMeta{

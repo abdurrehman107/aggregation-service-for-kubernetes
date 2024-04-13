@@ -3,8 +3,9 @@ package main
 import (
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
 	client "aggregation-service-cluster-api/cmd/client"
-	"github.com/gin-gonic/gin"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -73,7 +74,8 @@ func main() {
 	})
 
 	// Create deployment and set required number of replicas 
-	// e.g. localhost:8081/createDeployment/newdeploy/3 
+	// Be sure to set the name
+	// e.g. localhost:8081/createDeployment/newdeploy/3 (name: newdeploy, replicas: 3)
 	router.GET("/createdeployment/:deployment_name/:replicas", func(c *gin.Context) {
 		deployment_name := c.Param("deployment_name")
 		if deployment_name == "" {
@@ -90,6 +92,28 @@ func main() {
 		handlers.CreateDeploy(genereated_client, deployment_name, replicas_int)
 		c.JSON(200, gin.H{
 			"message": "Deployment created successfully.",
+		})
+	})
+
+	// Fetch YAML for a resource 
+	// e.g. localhost:8081/fetchYAML/pod/pod-name
+	router.GET("/fetchyaml/:resource/:name", func(c *gin.Context) { 
+		resource := c.Param("resource")
+		name := c.Param("name")
+		if resource == "" || name == "" {
+			c.JSON(400, gin.H{
+				"message": "Resource and name are required.",
+			})
+			return
+		}
+		// resource = "deployment"
+		// name = "demo-deployment"
+		yaml, err := handlers.FetchYAML(genereated_client, "default", resource, name)
+		if err != nil {
+			panic(err)
+		}
+		c.JSON(200, gin.H{
+			"yaml": yaml,
 		})
 	})
 
