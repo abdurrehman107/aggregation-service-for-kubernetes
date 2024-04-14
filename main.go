@@ -2,6 +2,7 @@ package main
 
 import (
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
+	watcher "aggregation-service-cluster-api/cmd/api/watcher"
 	client "aggregation-service-cluster-api/cmd/client"
 	"strconv"
 
@@ -23,30 +24,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	// deploymentClient, err := handlers.DeploymentClient(genereated_client)
-	if err != nil {
-		panic(err)
-	}
 	deploymentList, err := handlers.HandleListDeployments(genereated_client)
 	if err != nil {
 		panic(err)
 	}
-
-	// podWatcher, err := client.CoreV1().Pods("").Watch(context.TODO(), metav1.ListOptions{})
-	// go func() {
-	// 	for {
-	// 		select {
-	// 		case event := <-podWatcher.ResultChan():
-	// 			// Handle pod event
-	// 			// Update the pods variable or trigger a refresh
-	// 		case event := <-nodeWatcher.ResultChan():
-	// 			// Handle node event (if needed)
-	// 		}
-	// 	}
-	// }()
-	// if err != nil {
-	// 	panic(err)
-	// }
 
 	router.GET("/", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{
@@ -73,7 +54,7 @@ func main() {
 		})
 	})
 
-	// Create deployment and set required number of replicas 
+	// Create deployment and set required number of replicas
 	// Be sure to set the name
 	// e.g. localhost:8081/createDeployment/newdeploy/3 (name: newdeploy, replicas: 3)
 	router.GET("/createdeployment/:deployment_name/:replicas", func(c *gin.Context) {
@@ -94,9 +75,9 @@ func main() {
 		})
 	})
 
-	// Fetch YAML for a resource 
+	// Fetch YAML for a resource
 	// e.g. localhost:8081/fetchYAML/pod/pod-name
-	router.GET("/fetchyaml/:resource/:name", func(c *gin.Context) { 
+	router.GET("/fetchyaml/:resource/:name", func(c *gin.Context) {
 		resource := c.Param("resource")
 		name := c.Param("name")
 		if resource == "" || name == "" {
@@ -114,6 +95,14 @@ func main() {
 		})
 	})
 
+	// watcher
+	// e.g. localhost:8081/watcher
+	router.GET("/watcher", func(c *gin.Context) {
+		watcher.Watcher(genereated_client)
+		c.JSON(200, gin.H{
+			"message": "Watcher started.",
+		})
+	})
 
 	// Update deployment (change replicas) and change image of deployment
 	// e.g. localhost:8081/deploymentscale/deployment-name/replicas/image
