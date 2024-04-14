@@ -115,9 +115,9 @@ func main() {
 	})
 
 
-	// Scale deployment (change replicas) and change image of deployment
+	// Update deployment (change replicas) and change image of deployment
 	// e.g. localhost:8081/deploymentscale/deployment-name/replicas/image
-	router.GET("/deploymentscale/:deploymentName/:replicas/:newImage", func(c *gin.Context) {
+	router.GET("/deploymentupdate/:deploymentName/:replicas/:newImage", func(c *gin.Context) {
 		deploymentName := c.Param("deploymentName")
 		replicas := c.Param("replicas")
 		replicas_int, err := strconv.Atoi(replicas)
@@ -126,6 +126,19 @@ func main() {
 		}
 		newImage := c.Param("newImage")
 		handlers.UpdateDeployment(genereated_client, deploymentName, replicas_int, newImage)
+		c.JSON(200, gin.H{
+			"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
+		})
+	})
+
+	// Delete deployment
+	// e.g. localhost:8081/deletedeployment/deployment-name
+	router.GET("/deletedeployment/:deploymentName", func(c *gin.Context) {
+		deploymentName := c.Param("deploymentName")
+		handlers.DeleteDeploy(genereated_client, deploymentName)
+		c.JSON(200, gin.H{
+			"message": "Deployment " + deploymentName + " deleted successfully.",
+		})
 	})
 
 	// scale deployment (not working)
