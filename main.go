@@ -4,13 +4,24 @@ import (
 	handlers "aggregation-service-cluster-api/cmd/api/handlers"
 	watcher "aggregation-service-cluster-api/cmd/api/watcher"
 	client "aggregation-service-cluster-api/cmd/client"
-	"strconv"
-
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"strconv"
+	"time"
 )
 
 func main() {
 	router := gin.Default()
+	router.Use(cors.New(cors.Config{
+		// AllowOrigins:     []string{"https://foo.com"},
+		AllowAllOrigins:  true,
+		AllowMethods:     []string{"PUT", "PATCH", "GET", "POST", "DELETE"},
+		AllowHeaders:     []string{"Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge: 12 * time.Hour,
+	}))
+
 	// create config object
 	config := client.GenerateDefaultConfig()
 	// create a client
@@ -95,6 +106,14 @@ func main() {
 		})
 	})
 
+	// Define a struct to hold the notification messages
+	type Message struct {
+		ResourceName string `json:"resourceName"`
+	}
+	// Create a channel to receive notification messages from the Watcher function
+	messageChan := make(chan Message)
+	defer close(messageChan)
+
 	// watcher
 	// e.g. localhost:8081/watcher
 	router.GET("/watcher", func(c *gin.Context) {
@@ -106,15 +125,15 @@ func main() {
 
 	// Update deployment (change replicas) and change image of deployment
 	// e.g. localhost:8081/deploymentscale/deployment-name/replicas/image
-	router.GET("/deploymentupdate/:deploymentName/:replicas/:newImage", func(c *gin.Context) {
+	router.GET("/deploymentupdate/:deploymentName/:replicas/", func(c *gin.Context) {
 		deploymentName := c.Param("deploymentName")
 		replicas := c.Param("replicas")
 		replicas_int, err := strconv.Atoi(replicas)
 		if err != nil {
 			panic("err")
 		}
-		newImage := c.Param("newImage")
-		handlers.UpdateDeployment(genereated_client, deploymentName, replicas_int, newImage)
+		// newImage := c.Param("newImage")
+		handlers.UpdateDeployment(genereated_client, deploymentName, replicas_int)
 		c.JSON(200, gin.H{
 			"message": "Scaling deployment " + deploymentName + " to " + replicas + " replicas.",
 		})

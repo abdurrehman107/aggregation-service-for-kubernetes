@@ -43,7 +43,7 @@ func PatchDeploymentObject(ctx context.Context, client kubernetes.Interface, cur
 	return out, err
 }
 
-func UpdateDeployment(client *kubernetes.Clientset, deploymentName string, replicas int, image string) {
+func UpdateDeployment(client *kubernetes.Clientset, deploymentName string, replicas int) {
 	retryErr := retry.RetryOnConflict(retry.DefaultRetry, func() error {
 		// Retrieve the latest version of Deployment before attempting update
 		// RetryOnConflict uses exponential backoff to avoid exhausting the apiserver
@@ -53,7 +53,9 @@ func UpdateDeployment(client *kubernetes.Clientset, deploymentName string, repli
 		}
 
 		result.Spec.Replicas = int32Ptr(int32(replicas))             // reduce replica count
-		result.Spec.Template.Spec.Containers[0].Image = image // change nginx version
+		// if image != "" {
+		// 	result.Spec.Template.Spec.Containers[0].Image = image // change nginx version
+		// }
 		_, updateErr := client.AppsV1().Deployments("default").Update(context.TODO(), result, metav1.UpdateOptions{})
 		return updateErr
 	})
